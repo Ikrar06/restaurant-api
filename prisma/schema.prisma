@@ -1,0 +1,174 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Enum Definitions
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+enum TableLocation {
+  INDOOR
+  OUTDOOR
+  VIP
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+// User Model
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders  Order[]
+  reviews Review[]
+
+  @@index([email])
+}
+
+// Category Model
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  menuItems MenuItem[]
+
+  @@index([name])
+}
+
+// MenuItem Model
+model MenuItem {
+  id              Int      @id @default(autoincrement())
+  name            String
+  description     String
+  price           Float
+  imageUrl        String?
+  categoryId      Int
+  isAvailable     Boolean  @default(true)
+  preparationTime Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  orderItems OrderItem[]
+  reviews    Review[]
+
+  @@index([categoryId])
+  @@index([name])
+}
+
+// Table Model
+model Table {
+  id          Int           @id @default(autoincrement())
+  tableNumber Int           @unique
+  capacity    Int
+  location    TableLocation
+  status      TableStatus   @default(AVAILABLE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  orders Order[]
+
+  @@index([tableNumber])
+  @@index([status])
+}
+
+// Order Model
+model Order {
+  id          Int         @id @default(autoincrement())
+  orderNumber String      @unique
+  userId      Int
+  tableId     Int?
+  orderType   OrderType
+  status      OrderStatus @default(PENDING)
+  totalAmount Float
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  table      Table?      @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  orderItems OrderItem[]
+
+  @@index([userId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// OrderItem Model (Junction Table)
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  orderId    Int
+  menuItemId Int
+  quantity   Int
+  price      Float
+  subtotal   Float
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([menuItemId])
+}
+
+// Review Model
+model Review {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  menuItemId Int
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, menuItemId])
+  @@index([userId])
+  @@index([menuItemId])
+  @@index([rating])
+}
