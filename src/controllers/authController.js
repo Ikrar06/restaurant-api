@@ -1,7 +1,6 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const prisma = require('../config/database');
-const jwtConfig = require('../config/jwt');
+const { hashPassword, comparePassword } = require('../utils/password');
+const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 
 // Register user baru
 const register = async (req, res) => {
@@ -14,11 +13,14 @@ const register = async (req, res) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already exists' });
+      return res.status(400).json({
+        success: false,
+        message: 'Email already exists'
+      });
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
 
     // Buat user baru
     const user = await prisma.user.create({
@@ -31,15 +33,28 @@ const register = async (req, res) => {
       }
     });
 
+    // Generate tokens
+    const accessToken = generateAccessToken({ userId: user.id, role: user.role });
+    const refreshToken = generateRefreshToken({ userId: user.id, role: user.role });
+
     // Jangan kirim password ke client
     const { password: _, ...userWithoutPassword } = user;
 
     res.status(201).json({
+      success: true,
       message: 'User registered successfully',
-      user: userWithoutPassword
+      data: {
+        user: userWithoutPassword,
+        accessToken,
+        refreshToken
+      }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
   }
 };
 
@@ -54,37 +69,113 @@ const login = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
     }
 
     // Cek password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await comparePassword(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
     }
 
-    // Buat JWT token
-    const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      jwtConfig.secret,
-      { expiresIn: jwtConfig.expiresIn }
-    );
+    // Generate tokens
+    const accessToken = generateAccessToken({ userId: user.id, role: user.role });
+    const refreshToken = generateRefreshToken({ userId: user.id, role: user.role });
 
     // Jangan kirim password ke client
     const { password: _, ...userWithoutPassword } = user;
 
     res.json({
+      success: true,
       message: 'Login successful',
-      token,
-      user: userWithoutPassword
+      data: {
+        user: userWithoutPassword,
+        accessToken,
+        refreshToken
+      }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+
+// Refresh access token
+const refresh = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    // Verify refresh token
+    const decoded = verifyRefreshToken(refreshToken);
+
+    // Generate new access token
+    const newAccessToken = generateAccessToken({
+      userId: decoded.userId,
+      role: decoded.role
+    });
+
+    res.json({
+      success: true,
+      message: 'Token refreshed successfully',
+      data: {
+        accessToken: newAccessToken
+      }
+    });
+  } catch (error) {
+    res.status(403).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get current user profile
+const getMe = async (req, res) => {
+  try {
+    // req.user sudah diisi oleh auth middleware
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Jangan kirim password
+    const { password: _, ...userWithoutPassword } = user;
+
+    res.json({
+      success: true,
+      message: 'User profile retrieved successfully',
+      data: {
+        user: userWithoutPassword
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
   }
 };
 
 module.exports = {
   register,
-  login
+  login,
+  refresh,
+  getMe
 };
