@@ -1,44 +1,43 @@
-const Joi = require('joi');
+const { z } = require('zod');
 
 // Validation untuk register
-const registerSchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    'string.email': 'Email must be valid',
-    'any.required': 'Email is required'
-  }),
-  password: Joi.string()
-    .min(8)
-    .pattern(/[A-Z]/)
-    .pattern(/[0-9]/)
-    .required()
-    .messages({
-      'string.min': 'Password must be at least 8 characters',
-      'string.pattern.base': 'Password must contain at least one uppercase letter and one number',
-      'any.required': 'Password is required'
-    }),
-  name: Joi.string().min(2).max(50).required().messages({
-    'string.min': 'Name must be at least 2 characters',
-    'string.max': 'Name must not exceed 50 characters',
-    'any.required': 'Name is required'
-  }),
-  phone: Joi.string().optional()
+const registerSchema = z.object({
+  email: z.string({
+    required_error: 'Email is required',
+    invalid_type_error: 'Email must be a string',
+  }).email('Email must be valid'),
+  
+  password: z.string({
+    required_error: 'Password is required',
+  })
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+  
+  name: z.string({
+    required_error: 'Name is required',
+  })
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name must not exceed 50 characters'),
+  
+  phone: z.string().optional()
 });
 
 // Validation untuk login
-const loginSchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    'string.email': 'Email must be valid',
-    'any.required': 'Email is required'
-  }),
-  password: Joi.string().required().messages({
-    'any.required': 'Password is required'
+const loginSchema = z.object({
+  email: z.string({
+    required_error: 'Email is required',
+  }).email('Email must be valid'),
+  
+  password: z.string({
+    required_error: 'Password is required',
   })
 });
 
 // Validation untuk refresh token
-const refreshTokenSchema = Joi.object({
-  refreshToken: Joi.string().required().messages({
-    'any.required': 'Refresh token is required'
+const refreshTokenSchema = z.object({
+  refreshToken: z.string({
+    required_error: 'Refresh token is required',
   })
 });
 
