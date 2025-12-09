@@ -3,13 +3,36 @@ const prisma = new PrismaClient();
 
 const getCategories = async (req, res, next) => {
   try {
-    const categories = await prisma.category.findMany({
-      include: { _count: { select: { menuItems: true } } }
-    });
+    const { page = 1, limit = 10, search, sortBy = 'name', order = 'asc' } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const take = parseInt(limit);
+
+    const where = {};
+    if (search) {
+      where.name = { contains: search, mode: 'insensitive' };
+    }
+
+    const [categories, total] = await Promise.all([
+      prisma.category.findMany({
+        where,
+        include: { _count: { select: { menuItems: true } } },
+        orderBy: { [sortBy]: order },
+        skip,
+        take
+      }),
+      prisma.category.count({ where })
+    ]);
 
     res.json({
       success: true,
-      data: categories
+      data: categories,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
     });
   } catch (error) {
     next(error);
