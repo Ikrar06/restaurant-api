@@ -20,7 +20,18 @@ const updateTableSchema = z.object({
   status: z.enum(['AVAILABLE', 'OCCUPIED', 'RESERVED']).optional()
 });
 
+const queryTableSchema = z.object({
+  page: z.string().regex(/^\d+$/).transform(Number).optional(),
+  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  location: z.enum(['INDOOR', 'OUTDOOR', 'VIP']).optional(),
+  status: z.enum(['AVAILABLE', 'OCCUPIED', 'RESERVED']).optional(),
+  available: z.enum(['true', 'false']).optional(),
+  sortBy: z.enum(['tableNumber', 'capacity', 'createdAt', 'updatedAt']).optional(),
+  order: z.enum(['asc', 'desc']).optional()
+});
+
 module.exports = {
   createTableSchema,
-  updateTableSchema
+  updateTableSchema,
+  queryTableSchema
 };
