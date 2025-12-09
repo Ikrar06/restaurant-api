@@ -27,7 +27,12 @@ const getMenuItems = async (req, res, next) => {
     const [menuItems, total] = await Promise.all([
       prisma.menuItem.findMany({
         where,
-        include: { category: true },
+        include: {
+          category: true,
+          reviews: {
+            select: { rating: true }
+          }
+        },
         orderBy: { [sortBy]: order },
         skip,
         take
@@ -35,9 +40,21 @@ const getMenuItems = async (req, res, next) => {
       prisma.menuItem.count({ where })
     ]);
 
+    const menuItemsWithRating = menuItems.map(item => {
+      const avgRating = item.reviews.length > 0
+        ? item.reviews.reduce((sum, review) => sum + review.rating, 0) / item.reviews.length
+        : 0;
+      const { reviews, ...itemData } = item;
+      return {
+        ...itemData,
+        avgRating: Number(avgRating.toFixed(1)),
+        reviewCount: reviews.length
+      };
+    });
+
     res.json({
       success: true,
-      data: menuItems,
+      data: menuItemsWithRating,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
