@@ -12,9 +12,12 @@ const generateOrderNumber = () => {
 
 const getOrders = async (req, res, next) => {
   try {
-    const { status, orderType } = req.query;
+    const { page = 1, limit = 10, status, orderType, sortBy = 'createdAt', order = 'desc' } = req.query;
     const userRole = req.user.role;
     const userId = req.user.userId;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const take = parseInt(limit);
 
     const where = {};
 
@@ -25,19 +28,30 @@ const getOrders = async (req, res, next) => {
     if (status) where.status = status;
     if (orderType) where.orderType = orderType;
 
-    const orders = await prisma.order.findMany({
-      where,
-      include: {
-        user: { select: { name: true, email: true } },
-        table: true,
-        orderItems: { include: { menuItem: true } }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: {
+          user: { select: { name: true, email: true } },
+          table: true,
+          orderItems: { include: { menuItem: true } }
+        },
+        orderBy: { [sortBy]: order },
+        skip,
+        take
+      }),
+      prisma.order.count({ where })
+    ]);
 
     res.json({
       success: true,
-      data: orders
+      data: orders,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
     });
   } catch (error) {
     next(error);
