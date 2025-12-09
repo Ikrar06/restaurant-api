@@ -3,7 +3,10 @@ const prisma = new PrismaClient();
 
 const getMenuItems = async (req, res, next) => {
   try {
-    const { categoryId, isAvailable, minPrice, maxPrice, search } = req.query;
+    const { page = 1, limit = 10, categoryId, isAvailable, minPrice, maxPrice, search, sortBy = 'name', order = 'asc' } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const take = parseInt(limit);
 
     const where = {};
 
@@ -21,14 +24,26 @@ const getMenuItems = async (req, res, next) => {
       ];
     }
 
-    const menuItems = await prisma.menuItem.findMany({
-      where,
-      include: { category: true }
-    });
+    const [menuItems, total] = await Promise.all([
+      prisma.menuItem.findMany({
+        where,
+        include: { category: true },
+        orderBy: { [sortBy]: order },
+        skip,
+        take
+      }),
+      prisma.menuItem.count({ where })
+    ]);
 
     res.json({
       success: true,
-      data: menuItems
+      data: menuItems,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
     });
   } catch (error) {
     next(error);
