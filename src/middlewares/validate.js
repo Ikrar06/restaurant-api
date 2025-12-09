@@ -1,9 +1,17 @@
 const { z } = require('zod');
 
-const validate = (schema) => {
+const validate = (schema, source = 'body') => {
   return (req, res, next) => {
     try {
-      schema.parse(req.body);
+      const data = source === 'query' ? req.query : req.body;
+      const validated = schema.parse(data);
+
+      if (source === 'query') {
+        req.query = validated;
+      } else {
+        req.body = validated;
+      }
+
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
