@@ -3,9 +3,9 @@ const router = express.Router();
 const reviewController = require('../controllers/reviewController');
 const { verifyToken } = require('../middlewares/auth');
 const validate = require('../middlewares/validate');
-const { createReviewSchema, updateReviewSchema } = require('../validations/reviewValidation');
+const { createReviewSchema, updateReviewSchema, queryReviewSchema } = require('../validations/reviewValidation');
 
-router.get('/', reviewController.getReviews);
+router.get('/', validate(queryReviewSchema, 'query'), reviewController.getReviews);
 router.get('/:id', reviewController.getReviewById);
 router.post('/', verifyToken, validate(createReviewSchema), reviewController.createReview);
 router.put('/:id', verifyToken, validate(updateReviewSchema), reviewController.updateReview);

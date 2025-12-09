@@ -15,7 +15,19 @@ const updateReviewSchema = z.object({
   comment: z.string().min(10).max(500).optional()
 });
 
+const queryReviewSchema = z.object({
+  page: z.string().regex(/^\d+$/).transform(Number).optional(),
+  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  menuItemId: z.string().regex(/^\d+$/).transform(Number).optional(),
+  userId: z.string().regex(/^\d+$/).transform(Number).optional(),
+  minRating: z.string().regex(/^\d+$/).transform(Number).optional(),
+  maxRating: z.string().regex(/^\d+$/).transform(Number).optional(),
+  sortBy: z.enum(['rating', 'createdAt', 'updatedAt']).optional(),
+  order: z.enum(['asc', 'desc']).optional()
+});
+
 module.exports = {
   createReviewSchema,
-  updateReviewSchema
+  updateReviewSchema,
+  queryReviewSchema
 };
