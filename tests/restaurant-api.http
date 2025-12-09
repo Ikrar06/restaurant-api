@@ -38,7 +38,7 @@ Content-Type: application/json
 
 {
   "email": "admin@restaurant.com",
-  "password": "Admin123!"
+  "password": "password123"
 }
 
 ### Login as Staff
@@ -47,7 +47,7 @@ Content-Type: application/json
 
 {
   "email": "staff@restaurant.com",
-  "password": "Staff123!"
+  "password": "password123"
 }
 
 ### Login as Customer
@@ -55,8 +55,8 @@ POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "customer1@test.com",
-  "password": "Customer123!"
+  "email": "customer1@example.com",
+  "password": "password123"
 }
 
 ### Get Current User Profile
