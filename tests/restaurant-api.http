@@ -20,16 +20,15 @@ Content-Type: application/json
   "phone": "08123456789"
 }
 
-### Register New Staff (Admin Only)
+### Register Another Customer
 POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "newstaff@restaurant.com",
-  "password": "Staff123!",
-  "name": "New Staff Member",
-  "phone": "08123456790",
-  "role": "STAFF"
+  "email": "customer2@example.com",
+  "password": "Customer123!",
+  "name": "Second Customer",
+  "phone": "08123456790"
 }
 
 ### Login as Admin
@@ -165,7 +164,7 @@ GET {{baseUrl}}/api/menu-items?search=nasi&page=1
 GET {{baseUrl}}/api/menu-items?sortBy=price&order=desc
 
 ### Get Menu Item by ID with Reviews
-GET {{baseUrl}}/api/menu-items/1
+GET {{baseUrl}}/api/menu-items/3
 
 ### Create New Menu Item (Staff/Admin)
 POST {{baseUrl}}/api/menu-items
