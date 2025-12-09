@@ -3,7 +3,10 @@ const prisma = new PrismaClient();
 
 const getTables = async (req, res, next) => {
   try {
-    const { location, status, available } = req.query;
+    const { page = 1, limit = 10, location, status, available, sortBy = 'tableNumber', order = 'asc' } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const take = parseInt(limit);
 
     const where = {};
 
@@ -11,14 +14,25 @@ const getTables = async (req, res, next) => {
     if (status) where.status = status;
     if (available === 'true') where.status = 'AVAILABLE';
 
-    const tables = await prisma.table.findMany({
-      where,
-      orderBy: { tableNumber: 'asc' }
-    });
+    const [tables, total] = await Promise.all([
+      prisma.table.findMany({
+        where,
+        orderBy: { [sortBy]: order },
+        skip,
+        take
+      }),
+      prisma.table.count({ where })
+    ]);
 
     res.json({
       success: true,
-      data: tables
+      data: tables,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
     });
   } catch (error) {
     next(error);
