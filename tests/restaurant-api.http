@@ -1,0 +1,610 @@
+@baseUrl = http://localhost:3000
+@adminToken =
+@staffToken =
+@customerToken =
+@otherCustomerToken =
+@refreshToken =
+
+###############################################
+# 1. AUTHENTICATION TESTS
+###############################################
+
+### Register New Customer
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "newcustomer@test.com",
+  "password": "Customer123!",
+  "name": "New Customer",
+  "phone": "08123456789"
+}
+
+### Register New Staff (Admin Only)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "newstaff@restaurant.com",
+  "password": "Staff123!",
+  "name": "New Staff Member",
+  "phone": "08123456790",
+  "role": "STAFF"
+}
+
+### Login as Admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@restaurant.com",
+  "password": "Admin123!"
+}
+
+### Login as Staff
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "staff@restaurant.com",
+  "password": "Staff123!"
+}
+
+### Login as Customer
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer1@test.com",
+  "password": "Customer123!"
+}
+
+### Get Current User Profile
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{customerToken}}
+
+### Refresh Access Token
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Login with Invalid Credentials (Should Fail - 401)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@restaurant.com",
+  "password": "wrongpassword"
+}
+
+### Register with Weak Password (Should Fail - 400)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "weak",
+  "name": "Test User"
+}
+
+###############################################
+# 2. CATEGORY TESTS
+###############################################
+
+### Get All Categories (Public)
+GET {{baseUrl}}/api/categories?page=1&limit=10&sortBy=name&order=asc
+
+### Get All Categories with Search
+GET {{baseUrl}}/api/categories?search=main&page=1&limit=10
+
+### Get Category by ID with Menu Items
+GET {{baseUrl}}/api/categories/1
+
+### Create New Category (Admin Only)
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Signature Dishes",
+  "description": "Our chef's special creations",
+  "imageUrl": "https://via.placeholder.com/400x300"
+}
+
+### Update Category (Admin Only)
+PUT {{baseUrl}}/api/categories/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "description": "Updated description for appetizers"
+}
+
+### Delete Category (Admin Only) - Should fail if has menu items
+DELETE {{baseUrl}}/api/categories/10
+Authorization: Bearer {{adminToken}}
+
+### Try Create Category as Customer (Should Fail - 403)
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Category"
+}
+
+### Try Create Category with Invalid Data (Should Fail - 400)
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "A"
+}
+
+###############################################
+# 3. MENU ITEM TESTS
+###############################################
+
+### Get All Menu Items (Public)
+GET {{baseUrl}}/api/menu-items?page=1&limit=10
+
+### Get Menu Items by Category
+GET {{baseUrl}}/api/menu-items?categoryId=1&isAvailable=true
+
+### Get Menu Items with Price Range
+GET {{baseUrl}}/api/menu-items?minPrice=20000&maxPrice=50000
+
+### Get Menu Items with Search
+GET {{baseUrl}}/api/menu-items?search=nasi&page=1
+
+### Get Menu Items Sorted by Price
+GET {{baseUrl}}/api/menu-items?sortBy=price&order=desc
+
+### Get Menu Item by ID with Reviews
+GET {{baseUrl}}/api/menu-items/1
+
+### Create New Menu Item (Staff/Admin)
+POST {{baseUrl}}/api/menu-items
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "name": "Ayam Bakar Spesial",
+  "description": "Grilled chicken with special sauce and vegetables",
+  "price": 55000,
+  "categoryId": 2,
+  "preparationTime": 25,
+  "isAvailable": true,
+  "imageUrl": "https://via.placeholder.com/400x300"
+}
+
+### Update Menu Item (Staff/Admin)
+PUT {{baseUrl}}/api/menu-items/1
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "price": 48000,
+  "isAvailable": false
+}
+
+### Delete Menu Item (Admin Only)
+DELETE {{baseUrl}}/api/menu-items/20
+Authorization: Bearer {{adminToken}}
+
+### Try Create Menu with Invalid Data (Should Fail - 400)
+POST {{baseUrl}}/api/menu-items
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "name": "Te",
+  "price": 500,
+  "categoryId": 999
+}
+
+### Try Create Menu as Customer (Should Fail - 403)
+POST {{baseUrl}}/api/menu-items
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Menu",
+  "description": "Test description here",
+  "price": 25000,
+  "categoryId": 1,
+  "preparationTime": 15
+}
+
+###############################################
+# 4. TABLE TESTS
+###############################################
+
+### Get All Tables
+GET {{baseUrl}}/api/tables?page=1&limit=20
+
+### Get Available Tables Only
+GET {{baseUrl}}/api/tables?status=AVAILABLE
+
+### Get Tables by Location
+GET {{baseUrl}}/api/tables?location=INDOOR
+
+### Get Table by ID
+GET {{baseUrl}}/api/tables/1
+
+### Create New Table (Admin Only)
+POST {{baseUrl}}/api/tables
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "tableNumber": 15,
+  "capacity": 6,
+  "location": "VIP",
+  "status": "AVAILABLE"
+}
+
+### Update Table Status (Staff/Admin)
+PUT {{baseUrl}}/api/tables/1
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "status": "OCCUPIED"
+}
+
+### Delete Table (Admin Only)
+DELETE {{baseUrl}}/api/tables/15
+Authorization: Bearer {{adminToken}}
+
+### Try Create Table as Staff (Should Fail - 403)
+POST {{baseUrl}}/api/tables
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "tableNumber": 20,
+  "capacity": 4,
+  "location": "INDOOR"
+}
+
+###############################################
+# 5. ORDER TESTS
+###############################################
+
+### Get All Orders (Customer sees own, Staff/Admin sees all)
+GET {{baseUrl}}/api/orders?page=1&limit=10
+Authorization: Bearer {{customerToken}}
+
+### Get Orders with Filters (Staff/Admin)
+GET {{baseUrl}}/api/orders?status=PENDING&orderType=DINE_IN
+Authorization: Bearer {{staffToken}}
+
+### Get Orders by Date Range
+GET {{baseUrl}}/api/orders?dateFrom=2025-12-01T00:00:00Z&dateTo=2025-12-31T23:59:59Z
+Authorization: Bearer {{staffToken}}
+
+### Get Orders by Amount Range
+GET {{baseUrl}}/api/orders?minAmount=50000&maxAmount=200000
+Authorization: Bearer {{staffToken}}
+
+### Get Order by ID
+GET {{baseUrl}}/api/orders/1
+Authorization: Bearer {{customerToken}}
+
+### Create New Order - Dine In
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "tableId": 1,
+  "orderType": "DINE_IN",
+  "items": [
+    {
+      "menuItemId": 1,
+      "quantity": 2,
+      "notes": "Extra spicy please"
+    },
+    {
+      "menuItemId": 3,
+      "quantity": 1
+    }
+  ],
+  "notes": "Please serve quickly"
+}
+
+### Create New Order - Takeaway
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "orderType": "TAKEAWAY",
+  "items": [
+    {
+      "menuItemId": 5,
+      "quantity": 3
+    }
+  ]
+}
+
+### Create New Order - Delivery
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "orderType": "DELIVERY",
+  "items": [
+    {
+      "menuItemId": 2,
+      "quantity": 1
+    },
+    {
+      "menuItemId": 7,
+      "quantity": 2
+    }
+  ],
+  "notes": "Deliver to: Jl. Perintis Kemerdekaan"
+}
+
+### Update Order Status - Confirm (Staff)
+PUT {{baseUrl}}/api/orders/1
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "status": "CONFIRMED"
+}
+
+### Update Order Status - Preparing (Staff)
+PUT {{baseUrl}}/api/orders/1
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "status": "PREPARING"
+}
+
+### Update Order Status - Ready (Staff)
+PUT {{baseUrl}}/api/orders/1
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "status": "READY"
+}
+
+### Update Order Status - Completed (Staff)
+PUT {{baseUrl}}/api/orders/1
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
+### Cancel Order (Customer - own PENDING order)
+PUT {{baseUrl}}/api/orders/2
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "status": "CANCELLED"
+}
+
+### Try Update Other's Order (Should Fail - 403)
+PUT {{baseUrl}}/api/orders/1
+Authorization: Bearer {{otherCustomerToken}}
+Content-Type: application/json
+
+{
+  "status": "CANCELLED"
+}
+
+### Delete Order (Admin Only, Cancelled orders)
+DELETE {{baseUrl}}/api/orders/5
+Authorization: Bearer {{adminToken}}
+
+### Try Create Order without Items (Should Fail - 400)
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "orderType": "DINE_IN",
+  "items": []
+}
+
+### Try Create Dine In Order without Table (Should Fail - 400)
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "orderType": "DINE_IN",
+  "items": [
+    {
+      "menuItemId": 1,
+      "quantity": 1
+    }
+  ]
+}
+
+###############################################
+# 6. REVIEW TESTS
+###############################################
+
+### Get All Reviews
+GET {{baseUrl}}/api/reviews?page=1&limit=10
+
+### Get Reviews for Specific Menu Item
+GET {{baseUrl}}/api/reviews?menuItemId=1
+
+### Get Reviews with Rating Filter
+GET {{baseUrl}}/api/reviews?minRating=4
+
+### Get Reviews by User
+GET {{baseUrl}}/api/reviews?userId=2
+
+### Get Review by ID
+GET {{baseUrl}}/api/reviews/1
+
+### Create New Review (Must have completed order with this menu)
+POST {{baseUrl}}/api/reviews
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "menuItemId": 1,
+  "rating": 5,
+  "comment": "Absolutely delicious! Best nasi goreng I've ever had. Will definitely order again!"
+}
+
+### Try Create Duplicate Review (Should Fail - 400)
+POST {{baseUrl}}/api/reviews
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "menuItemId": 1,
+  "rating": 4,
+  "comment": "Second review for the same item"
+}
+
+### Try Review Without Ordering (Should Fail - 403)
+POST {{baseUrl}}/api/reviews
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "menuItemId": 20,
+  "rating": 5,
+  "comment": "Never ordered this item before"
+}
+
+### Update Own Review
+PUT {{baseUrl}}/api/reviews/1
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "Updated: Still the best menu item here!"
+}
+
+### Try Update Other's Review (Should Fail - 403)
+PUT {{baseUrl}}/api/reviews/2
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "rating": 1,
+  "comment": "Trying to update someone else's review"
+}
+
+### Delete Own Review
+DELETE {{baseUrl}}/api/reviews/5
+Authorization: Bearer {{customerToken}}
+
+### Delete Any Review as Admin
+DELETE {{baseUrl}}/api/reviews/3
+Authorization: Bearer {{adminToken}}
+
+### Try Create Review with Short Comment (Should Fail - 400)
+POST {{baseUrl}}/api/reviews
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "menuItemId": 2,
+  "rating": 5,
+  "comment": "Short"
+}
+
+###############################################
+# 7. EDGE CASES & ERROR TESTS
+###############################################
+
+### Invalid Token (401)
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer invalid_token_here
+
+### Missing Required Fields (400)
+POST {{baseUrl}}/api/menu-items
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "name": "Test"
+}
+
+### Resource Not Found (404)
+GET {{baseUrl}}/api/menu-items/99999
+
+### Duplicate Entry - Same Category Name (409)
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Appetizers"
+}
+
+### Unauthorized Access - Customer trying Admin action (403)
+DELETE {{baseUrl}}/api/categories/1
+Authorization: Bearer {{customerToken}}
+
+### Invalid Email Format (400)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "notanemail",
+  "password": "Password123!",
+  "name": "Test User"
+}
+
+### Price Below Minimum (400)
+POST {{baseUrl}}/api/menu-items
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Menu Item",
+  "description": "This is a test menu item with price below minimum",
+  "price": 500,
+  "categoryId": 1,
+  "preparationTime": 10
+}
+
+### Invalid Order Status Transition (400)
+PUT {{baseUrl}}/api/orders/1
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
+### Try Delete Non-Cancelled Order (400)
+DELETE {{baseUrl}}/api/orders/1
+Authorization: Bearer {{adminToken}}
+
+###############################################
+# 8. HEALTH CHECK & INFO
+###############################################
+
+### Health Check Endpoint
+GET {{baseUrl}}/
+
+### API Documentation (if available)
+GET {{baseUrl}}/api/docs
+
+### 404 Not Found Test
+GET {{baseUrl}}/api/nonexistent-route
