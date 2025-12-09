@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const reviewController = require('../controllers/reviewController');
-const { verifyToken } = require('../middlewares/auth');
-const validate = require('../middlewares/validate');
-const { createReviewSchema, updateReviewSchema, queryReviewSchema } = require('../validations/reviewValidation');
+const { verifyToken } = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createReviewSchema, updateReviewSchema, queryReviewSchema } = require('../validators/reviewValidation');
 
 router.get('/', validate(queryReviewSchema, 'query'), reviewController.getReviews);
 router.get('/:id', reviewController.getReviewById);

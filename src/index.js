@@ -1,11 +1,11 @@
 require('dotenv').config();
 const express = require('express');
-const logger = require('./middlewares/logger');
-const errorHandler = require('./middlewares/errorHandler');
-const securityHeaders = require('./middlewares/security');
-const corsConfig = require('./middlewares/corsConfig');
-const compressionMiddleware = require('./middlewares/compressionMiddleware');
-const { generalLimiter } = require('./middlewares/rateLimiter');
+const logger = require('./middleware/logger');
+const errorHandler = require('./middleware/errorHandler');
+const securityHeaders = require('./middleware/security');
+const corsConfig = require('./middleware/corsConfig');
+const compressionMiddleware = require('./middleware/compressionMiddleware');
+const { generalLimiter } = require('./middleware/rateLimiter');
 const authRoutes = require('./routes/authRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const menuItemRoutes = require('./routes/menuItemRoutes');

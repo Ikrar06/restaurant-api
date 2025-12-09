@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const menuItemController = require('../controllers/menuItemController');
-const { verifyToken, checkRole } = require('../middlewares/auth');
-const validate = require('../middlewares/validate');
-const { createMenuItemSchema, updateMenuItemSchema, queryMenuItemSchema } = require('../validations/menuItemValidation');
+const { verifyToken, checkRole } = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createMenuItemSchema, updateMenuItemSchema, queryMenuItemSchema } = require('../validators/menuItemValidation');
 
 router.get('/', validate(queryMenuItemSchema, 'query'), menuItemController.getMenuItems);
 router.get('/:id', menuItemController.getMenuItemById);
