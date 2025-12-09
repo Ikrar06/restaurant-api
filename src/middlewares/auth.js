@@ -1,35 +1,43 @@
 const jwt = require('jsonwebtoken');
 const jwtConfig = require('../config/jwt');
 
-// Middleware untuk verifikasi token
 const verifyToken = (req, res, next) => {
-  // Ambil token dari header
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer TOKEN"
+  const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
+    return res.status(401).json({
+      success: false,
+      message: 'No token provided'
+    });
   }
 
   try {
-    // Verifikasi token
     const decoded = jwt.verify(token, jwtConfig.secret);
-    req.user = decoded; // Simpan data user ke request
+    req.user = decoded;
     next();
   } catch (error) {
-    return res.status(403).json({ message: 'Invalid token' });
+    return res.status(403).json({
+      success: false,
+      message: 'Invalid token'
+    });
   }
 };
 
-// Middleware untuk cek role
 const checkRole = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized'
+      });
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Forbidden: Insufficient permissions' });
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Insufficient permissions'
+      });
     }
 
     next();
