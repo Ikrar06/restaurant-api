@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 // Hash password dengan bcrypt (salt rounds 10)
 const hashPassword = async (password) => {
