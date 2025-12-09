@@ -30,7 +30,20 @@ const updateMenuItemSchema = z.object({
   preparationTime: z.number().int().min(1).max(180).optional()
 });
 
+const queryMenuItemSchema = z.object({
+  page: z.string().regex(/^\d+$/).transform(Number).optional(),
+  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  categoryId: z.string().regex(/^\d+$/).transform(Number).optional(),
+  isAvailable: z.enum(['true', 'false']).optional(),
+  minPrice: z.string().regex(/^\d+(\.\d+)?$/).transform(Number).optional(),
+  maxPrice: z.string().regex(/^\d+(\.\d+)?$/).transform(Number).optional(),
+  search: z.string().max(100).optional(),
+  sortBy: z.enum(['name', 'price', 'createdAt', 'updatedAt']).optional(),
+  order: z.enum(['asc', 'desc']).optional()
+});
+
 module.exports = {
   createMenuItemSchema,
-  updateMenuItemSchema
+  updateMenuItemSchema,
+  queryMenuItemSchema
 };
