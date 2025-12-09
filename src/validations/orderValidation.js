@@ -36,7 +36,22 @@ const updateOrderSchema = z.object({
   notes: z.string().max(500).optional()
 });
 
+const queryOrderSchema = z.object({
+  page: z.string().regex(/^\d+$/).transform(Number).optional(),
+  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  status: z.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED']).optional(),
+  orderType: z.enum(['DINE_IN', 'TAKEAWAY', 'DELIVERY']).optional(),
+  userId: z.string().regex(/^\d+$/).transform(Number).optional(),
+  dateFrom: z.string().datetime().optional(),
+  dateTo: z.string().datetime().optional(),
+  minAmount: z.string().regex(/^\d+(\.\d+)?$/).transform(Number).optional(),
+  maxAmount: z.string().regex(/^\d+(\.\d+)?$/).transform(Number).optional(),
+  sortBy: z.enum(['orderNumber', 'totalAmount', 'createdAt', 'updatedAt']).optional(),
+  order: z.enum(['asc', 'desc']).optional()
+});
+
 module.exports = {
   createOrderSchema,
-  updateOrderSchema
+  updateOrderSchema,
+  queryOrderSchema
 };

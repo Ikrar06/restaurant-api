@@ -12,7 +12,7 @@ const generateOrderNumber = () => {
 
 const getOrders = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, status, orderType, sortBy = 'createdAt', order = 'desc' } = req.query;
+    const { page = 1, limit = 10, status, orderType, userId: filterUserId, dateFrom, dateTo, minAmount, maxAmount, sortBy = 'createdAt', order = 'desc' } = req.query;
     const userRole = req.user.role;
     const userId = req.user.userId;
 
@@ -27,6 +27,22 @@ const getOrders = async (req, res, next) => {
 
     if (status) where.status = status;
     if (orderType) where.orderType = orderType;
+
+    if (userRole !== 'CUSTOMER' && filterUserId) {
+      where.userId = filterUserId;
+    }
+
+    if (dateFrom || dateTo) {
+      where.createdAt = {};
+      if (dateFrom) where.createdAt.gte = new Date(dateFrom);
+      if (dateTo) where.createdAt.lte = new Date(dateTo);
+    }
+
+    if (minAmount || maxAmount) {
+      where.totalAmount = {};
+      if (minAmount) where.totalAmount.gte = minAmount;
+      if (maxAmount) where.totalAmount.lte = maxAmount;
+    }
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
