@@ -14,7 +14,16 @@ const updateCategorySchema = z.object({
   imageUrl: z.string().url().optional()
 });
 
+const queryCategorySchema = z.object({
+  page: z.string().regex(/^\d+$/).transform(Number).optional(),
+  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  search: z.string().max(100).optional(),
+  sortBy: z.enum(['name', 'createdAt', 'updatedAt']).optional(),
+  order: z.enum(['asc', 'desc']).optional()
+});
+
 module.exports = {
   createCategorySchema,
-  updateCategorySchema
+  updateCategorySchema,
+  queryCategorySchema
 };
