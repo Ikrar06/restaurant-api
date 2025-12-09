@@ -3,7 +3,10 @@ const prisma = new PrismaClient();
 
 const getReviews = async (req, res, next) => {
   try {
-    const { menuItemId, userId, minRating, maxRating } = req.query;
+    const { page = 1, limit = 10, menuItemId, userId, minRating, maxRating, sortBy = 'createdAt', order = 'desc' } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const take = parseInt(limit);
 
     const where = {};
 
@@ -15,18 +18,29 @@ const getReviews = async (req, res, next) => {
       if (maxRating) where.rating.lte = parseInt(maxRating);
     }
 
-    const reviews = await prisma.review.findMany({
-      where,
-      include: {
-        user: { select: { name: true, email: true } },
-        menuItem: { select: { name: true } }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+    const [reviews, total] = await Promise.all([
+      prisma.review.findMany({
+        where,
+        include: {
+          user: { select: { name: true, email: true } },
+          menuItem: { select: { name: true } }
+        },
+        orderBy: { [sortBy]: order },
+        skip,
+        take
+      }),
+      prisma.review.count({ where })
+    ]);
 
     res.json({
       success: true,
-      data: reviews
+      data: reviews,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
     });
   } catch (error) {
     next(error);
