@@ -230,6 +230,7 @@ Detailed API documentation tersedia di [API-DOCS.md](./API-DOCS.md)
 ### Quick Reference
 
 **Base URL:** http://localhost:3000/api
+**Production URL:** http://52.54.90.6/api
 
 **Authentication Endpoints:**
 - POST /auth/register - Register user baru
@@ -309,10 +310,6 @@ Expected response:
 ## Deployment
 
 Deployment guide lengkap tersedia di [DEPLOYMENT.md](./DEPLOYMENT.md)
-
-## License
-
-This project is licensed under the ISC License.
 
 ## Author
 
