@@ -4,7 +4,7 @@ Dokumentasi lengkap untuk semua endpoint API Restaurant Management System.
 
 ## Base URL
 ```
-http://52.54.90.6/api
+http://44.216.9.251/api
 ```
 
 ## Response Format
@@ -1456,18 +1456,18 @@ Untuk testing API bisa menggunakan:
 
 2. **Postman / Insomnia**
    - Import collection
-   - Set base URL: `http://52.54.90.6/api`
+   - Set base URL: `http://44.216.9.251/api`
    - Set Authorization header dengan token
 
 3. **cURL**
    ```bash
    # Login
-   curl -X POST http://52.54.90.6/api/auth/login \
+   curl -X POST http://44.216.9.251/api/auth/login \
      -H "Content-Type: application/json" \
      -d '{"email":"admin@restaurant.com","password":"password123"}'
 
    # Get categories dengan token
-   curl http://52.54.90.6/api/categories \
+   curl http://44.216.9.251/api/categories \
      -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
    ```
 

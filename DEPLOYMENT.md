@@ -11,9 +11,9 @@ Panduan deployment REST API ke AWS EC2 untuk production.
 - **Branch:** main
 
 ### Production URLs
-- **Base URL:** `http://54.91.136.63:3000/api`
-- **Health Check:** `http://54.91.136.63:3000/`
-- **With Nginx:** `http://54.91.136.63/api` (port 80)
+- **Base URL:** `http://44.216.9.251:3000/api`
+- **Health Check:** `http://44.216.9.251:3000/`
+- **With Nginx:** `http://44.216.9.251/api` (port 80)
 
 ### AWS EC2 Details
 ```
@@ -21,9 +21,21 @@ Instance ID    : i-00822e43a0feb1580
 Instance Type  : t2.micro (Free Tier)
 Region         : us-east-1a
 OS             : Ubuntu Server 22.04 LTS
-Public IP      : 54.91.136.63
+Public IP      : 52.54.90.6
 Storage        : 8GB gp2
 ```
+
+### Elastic IP (Static Public IP)
+
+Elastic IP (EIP) telah dialokasikan dan di-associate ke EC2 instance untuk memastikan alamat publik tidak berubah saat instance direstart.  
+- **Elastic IP:** `44.216.9.251`  
+- **Associated Instance ID:** `i-00822e43a0feb1580`  
+- **Kegunaan:** Memastikan endpoint publik tetap stabil (baik untuk dokumentasi, DNS A record, SSL/TLS issuance, dan URL production).  
+- **Verifikasi di server:** jalankan `curl ifconfig.me` → hasil harus `44.216.9.251`.  
+- **Catatan biaya:** AWS mengenakan biaya bila Elastic IP dialokasikan tetapi **tidak attached** ke instance. Lepaskan (Release) EIP jika sudah tidak digunakan untuk menghindari biaya.
+
+**Rekomendasi:** Gunakan Elastic IP ini sebagai A record untuk domain produksi (mis. `api.example.com`) agar lebih profesional dan mudah berpindah server di masa depan.
+
 
 ### Test Credentials
 ```
@@ -96,12 +108,12 @@ chmod 400 ~/.ssh/restaurant-api-key.pem
 
 #### 2.2 SSH ke EC2
 ```bash
-ssh -i ~/.ssh/restaurant-api-key.pem ubuntu@52.54.90.6
+ssh -i ~/.ssh/restaurant-api-key.pem ubuntu@44.216.9.251
 ```
 
 Contoh:
 ```bash
-ssh -i ~/.ssh/restaurant-api-key.pem ubuntu@52.54.90.6
+ssh -i ~/.ssh/restaurant-api-key.pem ubuntu@44.216.9.251
 ```
 
 Ketik `yes` kalau diminta confirm connection.
@@ -201,7 +213,7 @@ JWT_REFRESH_SECRET=your-super-secure-production-refresh-secret-key-min-32-chars
 JWT_REFRESH_EXPIRES_IN=7d
 
 # CORS (ganti dengan domain frontend jika ada)
-ALLOWED_ORIGINS=http://54.91.136.63,http://54.91.136.63:3000
+ALLOWED_ORIGINS=http://44.216.9.251,http://44.216.9.251:3000
 ```
 
 **Save:** Ctrl+O, Enter, Ctrl+X
@@ -356,7 +368,7 @@ Isi dengan:
 ```nginx
 server {
     listen 80;
-    server_name 54.91.136.63;
+    server_name 44.216.9.251;
 
     # Logging
     access_log /var/log/nginx/restaurant-api-access.log;
@@ -408,7 +420,7 @@ sudo systemctl restart nginx
 curl http://localhost:3000/
 
 # Dari browser/local terminal
-curl http://54.91.136.63:3000/
+curl http://44.216.9.251:3000/
 ```
 
 Expected response:
@@ -420,13 +432,13 @@ Expected response:
 
 ### 8.2 Test dengan Nginx (jika sudah setup)
 ```bash
-curl http://54.91.136.63/
+curl http://44.216.9.251/
 ```
 
 ### 8.3 Test Authentication
 ```bash
 # Register user baru
-curl -X POST http://54.91.136.63:3000/api/auth/register \
+curl -X POST http://44.216.9.251:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Test User",
@@ -435,7 +447,7 @@ curl -X POST http://54.91.136.63:3000/api/auth/register \
   }'
 
 # Login
-curl -X POST http://54.91.136.63:3000/api/auth/login \
+curl -X POST http://44.216.9.251:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@restaurant.com",
@@ -446,7 +458,7 @@ curl -X POST http://54.91.136.63:3000/api/auth/login \
 ### 8.4 Test API Endpoints
 Gunakan Postman atau REST Client dengan base URL:
 ```
-http://54.91.136.63:3000/api
+http://44.216.9.251:3000/api
 ```
 
 Test endpoints:
@@ -599,7 +611,7 @@ pm2 restart restaurant-api
 ### Update Aplikasi
 ```bash
 # SSH ke EC2
-ssh -i ~/.ssh/restaurant-api-key.pem ubuntu@54.91.136.63
+ssh -i ~/.ssh/restaurant-api-key.pem ubuntu@44.216.9.251
 
 # Masuk ke folder project
 cd restaurant-api
@@ -630,7 +642,7 @@ cp prod.db prod.db.backup-$(date +%Y%m%d)
 
 # Atau download ke local
 # Dari local terminal:
-scp -i ~/.ssh/restaurant-api-key.pem ubuntu@54.91.136.63:~/restaurant-api/prod.db ./backup/
+scp -i ~/.ssh/restaurant-api-key.pem ubuntu@44.216.9.251:~/restaurant-api/prod.db ./backup/
 ```
 
 ---

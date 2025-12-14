@@ -230,7 +230,7 @@ Detailed API documentation tersedia di [API-DOCS.md](./API-DOCS.md)
 ### Quick Reference
 
 **Base URL:** http://localhost:3000/api
-**Production URL:** http://52.54.90.6/api
+**Production URL:** http://44.216.9.251/api
 
 **Authentication Endpoints:**
 - POST /auth/register - Register user baru
@@ -310,6 +310,10 @@ Expected response:
 ## Deployment
 
 Deployment guide lengkap tersedia di [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+## Deployment Notes
+
+This API is deployed on AWS EC2 using an Elastic IP to ensure a static public address that remains unchanged across instance restarts.
 
 ## Author
 
