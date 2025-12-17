@@ -17,10 +17,8 @@ const verifyToken = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(403).json({
-      success: false,
-      message: 'Invalid token'
-    });
+    // Pass error ke error handler untuk handling yang konsisten
+    next(error);
   }
 };
 

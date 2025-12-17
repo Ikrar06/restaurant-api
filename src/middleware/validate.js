@@ -3,11 +3,24 @@ const { z } = require('zod');
 const validate = (schema, source = 'body') => {
   return (req, res, next) => {
     try {
-      const data = source === 'query' ? req.query : req.body;
+      // Tentukan sumber data berdasarkan parameter source
+      let data;
+      if (source === 'query') {
+        data = req.query;
+      } else if (source === 'params') {
+        data = req.params;
+      } else {
+        data = req.body;
+      }
+
+      // Validasi data dengan schema
       const validated = schema.parse(data);
 
+      // Update request object dengan data yang sudah divalidasi
       if (source === 'query') {
         req.query = validated;
+      } else if (source === 'params') {
+        req.params = validated;
       } else {
         req.body = validated;
       }
