@@ -18,12 +18,10 @@ services:
           property: connectionString
       - key: JWT_SECRET
         generateValue: true  # Auto-generate secure secret
-        sync: false
       - key: JWT_EXPIRES_IN
         value: 15m
       - key: JWT_REFRESH_SECRET
         generateValue: true  # Auto-generate secure secret
-        sync: false
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
       - key: ALLOWED_ORIGINS
