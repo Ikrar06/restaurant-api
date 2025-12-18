@@ -12,5 +12,8 @@ node_modules/
 *.log
 logs/
 
-# OS
+# OS (macOS)
 .DS_Store
+._*
+.AppleDouble
+.LSOverride
